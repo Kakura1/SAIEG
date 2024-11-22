@@ -21,6 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'estado_id',
+        'municipio_id',
+        'direccion',
+        'codigo_postal',
     ];
 
     /**
@@ -42,4 +46,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+    public function estado(){
+        return $this->belongsTo(estado::class);
+    }public function municipio(){
+        return $this->belongsTo(municipio::class);
+    }
 }
