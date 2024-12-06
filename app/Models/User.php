@@ -22,7 +22,6 @@ class User extends Authenticatable
         'email',
         'password',
         'estado_id',
-        'municipio_id',
         'direccion',
         'codigo_postal',
     ];
@@ -48,7 +47,5 @@ class User extends Authenticatable
     ];
     public function estado(){
         return $this->belongsTo(estado::class);
-    }public function municipio(){
-        return $this->belongsTo(municipio::class);
-    }
+    }  
 }

@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('archivists', function (Blueprint $table) {
             $table->id();
             $table->string('nombre'); // Nombre de la carpeta o archivo
-            $table->enum('tipo', ['carpeta', 'archivo']); // Define si es carpeta o archivo
+            $table->foreignId('carpeta_id')->nullable() // Relación con carpetas
+            ->constrained('carpetas') // Hace referencia a la tabla carpetas
+            ->nullOnDelete(); // Si se elimina la carpeta, el campo queda como null
             $table->foreignId('parent_id')->nullable()->constrained('archivists')->nullOnDelete(); // Relación consigo mismo
             $table->softDeletes(); // Agregar Soft Deletes
             $table->timestamps();

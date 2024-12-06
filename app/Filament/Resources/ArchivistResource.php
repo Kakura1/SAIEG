@@ -24,7 +24,8 @@ use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
 
 class ArchivistResource extends Resource
 {
@@ -49,18 +50,34 @@ class ArchivistResource extends Resource
                     ])
                     ->required()
                     ->label('Tipo'),
-                Select::make('parent_id')
+                    Select::make('carpeta_id')
                     ->label('Carpeta')
-                    ->options(Archivist::where('tipo', 'carpeta')->pluck('nombre', 'id'))
-                    ->nullable(),
+                    ->relationship('carpeta', 'nombre')
+                    ->createOptionForm([
+                        TextInput::make('nombre')
+                            ->label('Nombre')
+                            ->required()
+                            ->maxLength(255),
+        
+                        Textarea::make('descripcion')
+                            ->label('Descripción')
+                            ->nullable(),
+                    ])
+                    ->searchable()
+                    ->nullable()
+                    ->placeholder('Selecciona o crea una carpeta'),
                 FileUpload::make('archivo')
                     ->label('Archivo')
                     ->directory('archiveros') // Carpeta dentro de storage/app/public
                     ->visibility('public') // Asegura que sea accesible públicamente
                     ->nullable()
                     ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']),
-                DateTimePicker::make('fecha del archivo')
-                    ->native(false),
+                DatePicker::make('fecha')
+                    ->label('Fecha')
+                    ->required() // Si deseas que sea obligatorio
+                    ->placeholder('Selecciona una fecha')
+                    ->displayFormat('Y-m-d') // Muestra año-mes-día
+                    ->closeOnDateSelection(),
             ]);
     }
 
@@ -73,9 +90,11 @@ class ArchivistResource extends Resource
                 TextColumn::make('tipo')->label('Tipo')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                TextColumn::make('parent.nombre')->label('Carpeta')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('carpeta.nombre')
+                    ->label('Carpeta')
+                    ->sortable()
+                    ->toggleable()
+                    ->searchable(),
                 TextColumn::make('archivo')
                     ->label('Archivo')
                     ->formatStateUsing(function ($state) {
@@ -85,10 +104,9 @@ class ArchivistResource extends Resource
                     })
                     ->html()
                     ->toggleable(isToggledHiddenByDefault: false),
-                TextColumn::make('fecha del archivo')->label('Fecha del Archivo')
-                    ->dateTime()
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('fecha')
+                    ->label('Fecha')
+                    ->date('Y-m-d'), // Muestra año-mes-día,
                 TextColumn::make('created_at')->label('Creado desde')
                     ->dateTime()
                     ->sortable()

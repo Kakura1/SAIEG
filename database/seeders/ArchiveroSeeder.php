@@ -14,21 +14,6 @@ class ArchiveroSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear 5 carpetas
-        $carpetas = Archivist::factory()
-            ->count(5)
-            ->create([
-                'tipo' => 'carpeta', // Especifica que son carpetas
-            ]);
-
-        // Para cada carpeta, agregar 4 archivos
-        foreach ($carpetas as $carpeta) {
-            Archivist::factory()
-                ->count(4)
-                ->create([
-                    'tipo' => 'archivo', // Especifica que son archivos
-                    'parent_id' => $carpeta->id, // Relación con la carpeta padre
-                ]);
-        }
+        
     }
 }

@@ -14,18 +14,10 @@ return new class extends Migration
             $table->string('abreviatura', 5)->nullable();
             $table->timestamps();
         });
-        Schema::create('municipios', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre');
-            $table->foreignId('estado_id')->constrained('estados')->onDelete('cascade');
-            $table->timestamps();
-        });
-
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('municipios');
         Schema::dropIfExists('estados');
     }
 };

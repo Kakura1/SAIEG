@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('archivists', function (Blueprint $table) {
             $table->string('archivo')->nullable()->after('parent_id'); // Campo para la ruta del archivo
-            $table->dateTime('fecha del archivo')->nullable();
+            $table->date('fecha')->nullable()->after('archivo');
         });
     }
 
@@ -18,7 +18,7 @@ return new class extends Migration
     {
         Schema::table('archivists', function (Blueprint $table) {
             $table->dropColumn('archivo');
-            $table->dropColumn('fecha del archivo');
+            $table->dropColumn('fecha');
         });
     }
 };

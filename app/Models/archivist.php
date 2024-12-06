@@ -15,7 +15,11 @@ class archivist extends Model
     use SoftDeletes;
     use HasFactory;
 
-    protected $fillable = ['nombre', 'tipo', 'parent_id', 'archivo'];
+    protected $fillable = ['nombre', 'tipo', 'parent_id', 'archivo', 'fecha',];
+
+    protected $casts = [
+        'fecha' => 'date', // Cast para que sea tratado como una fecha
+    ];
 
     protected static function boot()
     {
@@ -42,6 +46,11 @@ class archivist extends Model
     public function children(): HasMany
     {
         return $this->hasMany(Archivist::class, 'parent_id');
+    }
+
+    public function carpeta()
+    {
+        return $this->belongsTo(Carpeta::class);
     }
 
     public function delete()
