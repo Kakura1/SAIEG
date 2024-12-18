@@ -14,11 +14,10 @@ return new class extends Migration
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
             $table->string('nombre'); // Nombre de la carpeta o archivo
-            $table->enum('tipo', ['carpeta', 'archivo']);
-            $table->foreignId('parent_id')->nullable()->constrained('archivists')->nullOnDelete(); // Relación consigo mismo
+            $table->foreignId('carpeta_id')->nullable() // Relación con carpetas
+            ->constrained('carpetas') // Hace referencia a la tabla carpetas
+            ->nullOnDelete(); // Si se elimina la carpeta, el campo queda como null
             $table->softDeletes();
-            $table->string('archivo')->nullable()->after('parent_id');
-            $table->date('fecha')->nullable()->after('archivo');
             $table->timestamps();
         });
     }

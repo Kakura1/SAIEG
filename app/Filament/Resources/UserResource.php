@@ -63,7 +63,17 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('codigo_postal')
                             ->required(),
 
-                    ])
+
+                    ]), 
+                Section::make('Roles')
+                ->schema([
+                    Forms\Components\Select::make('roles')
+                    ->label('Rol')
+                    ->relationship('roles', 'name')
+                    ->preload()
+                    ->multiple(false)
+                    ->required()
+                ])
             ]);
     }
 

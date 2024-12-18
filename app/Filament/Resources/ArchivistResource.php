@@ -27,14 +27,30 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Gate;
+
 class ArchivistResource extends Resource
 {
     protected static ?string $model = Archivist::class;
     protected static ?string $navigationGroup = 'Administración de Archivos';
-    protected static ?string $navigationLabel = 'Archivero';
+    protected static ?string $navigationLabel = 'Estadística';
     protected static ?string $navigationIcon = 'heroicon-m-folder';
     protected static ?int $navigationSort = 3;
-    protected static ?string $modelLabel = 'Archivero';
+    protected static ?string $modelLabel = 'Archivo';
+
+    public static function authorizeResourceAccess(string $action): bool
+    {
+        $user = auth()->user();
+
+        return match ($action) {
+            'viewAny', 'view' => Gate::allows('ver'),
+            'create' => Gate::allows('crear'),
+            'update' => Gate::allows('editar'),
+            'delete' => Gate::allows('eliminar'),
+            default => false,
+        };
+    }
 
     public static function form(Form $form): Form
     {
@@ -43,14 +59,7 @@ class ArchivistResource extends Resource
                 TextInput::make('nombre')
                     ->required()
                     ->label('Nombre'),
-                Radio::make('tipo')
-                    ->options([
-                        'carpeta' => 'Carpeta',
-                        'archivo' => 'Archivo',
-                    ])
-                    ->required()
-                    ->label('Tipo'),
-                    Select::make('carpeta_id')
+                Select::make('carpeta_id')
                     ->label('Carpeta')
                     ->relationship('carpeta', 'nombre')
                     ->createOptionForm([
@@ -58,12 +67,14 @@ class ArchivistResource extends Resource
                             ->label('Nombre')
                             ->required()
                             ->maxLength(255),
-        
+
                         Textarea::make('descripcion')
                             ->label('Descripción')
                             ->nullable(),
                     ])
                     ->searchable()
+                    ->preload()
+                    ->live()
                     ->nullable()
                     ->placeholder('Selecciona o crea una carpeta'),
                 FileUpload::make('archivo')
@@ -73,7 +84,7 @@ class ArchivistResource extends Resource
                     ->nullable()
                     ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']),
                 DatePicker::make('fecha')
-                    ->label('Fecha')
+                    ->label('Fecha del archivo')
                     ->required() // Si deseas que sea obligatorio
                     ->placeholder('Selecciona una fecha')
                     ->displayFormat('Y-m-d') // Muestra año-mes-día
@@ -86,10 +97,7 @@ class ArchivistResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nombre')->label('Nombre')
-                    ->searchable(),
-                TextColumn::make('tipo')->label('Tipo')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->searchable()->sortable(),
                 TextColumn::make('carpeta.nombre')
                     ->label('Carpeta')
                     ->sortable()
@@ -105,7 +113,8 @@ class ArchivistResource extends Resource
                     ->html()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('fecha')
-                    ->label('Fecha')
+                    ->searchable()->sortable()
+                    ->label('Fecha del Archivo')
                     ->date('Y-m-d'), // Muestra año-mes-día,
                 TextColumn::make('created_at')->label('Creado desde')
                     ->dateTime()
@@ -120,6 +129,8 @@ class ArchivistResource extends Resource
                 TrashedFilter::make(), // Agregar filtro para elementos eliminados
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                ->visible(fn () => auth()->user()?->hasRole('administrador')),
                 EditAction::make(), // Acción para editar
                 RestoreAction::make(), // Agregar acción de restauración
             ])
@@ -142,9 +153,11 @@ class ArchivistResource extends Resource
         return [
             'index' => Pages\ListArchivists::route('/'),
             'create' => Pages\CreateArchivist::route('/create'),
+            'view' => Pages\ViewArchivist::route('/{record}'),
             'edit' => Pages\EditArchivist::route('/{record}/edit'),
         ];
     }
+    
     public static function getBreadcrumbForCreate(): string
     {
         return 'Crear Archivero';
